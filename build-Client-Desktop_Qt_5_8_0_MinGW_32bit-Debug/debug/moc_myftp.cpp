@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_myFTP_t {
-    QByteArrayData data[14];
-    char stringdata0[139];
+    QByteArrayData data[13];
+    char stringdata0[132];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -43,14 +43,13 @@ QT_MOC_LITERAL(8, 77, 5), // "abort"
 QT_MOC_LITERAL(9, 83, 16), // "startNextCommand"
 QT_MOC_LITERAL(10, 100, 10), // "piFinished"
 QT_MOC_LITERAL(11, 111, 5), // "error"
-QT_MOC_LITERAL(12, 117, 14), // "piConnectState"
-QT_MOC_LITERAL(13, 132, 6) // "cState"
+QT_MOC_LITERAL(12, 117, 14) // "piConnectState"
 
     },
     "myFTP\0stateChanged\0\0myFTP::State\0"
     "listInfo\0QUrlInfo\0readyRead\0commandFinished\0"
     "abort\0startNextCommand\0piFinished\0"
-    "error\0piConnectState\0cState"
+    "error\0piConnectState"
 };
 #undef QT_MOC_LITERAL
 
@@ -89,7 +88,7 @@ static const uint qt_meta_data_myFTP[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Bool,   11,
-    QMetaType::Void, 0x80000000 | 3,   13,
+    QMetaType::Void, 0x80000000 | 3,    2,
 
        0        // eod
 };

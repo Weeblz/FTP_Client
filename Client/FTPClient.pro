@@ -1,14 +1,14 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-05-03T19:38:50
+# Project created by QtCreator 2017-06-15T17:00:34
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Client
+TARGET = FTPClient
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -25,11 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    myftp.cpp \
-    FtpCore.cpp
+    FtpCore.cpp \
+    myftp.cpp
 
 HEADERS  += mainwindow.h \
-    myftp.h \
-    FtpCore.h
+    FtpCore.h \
+    myftp.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    source1.qrc

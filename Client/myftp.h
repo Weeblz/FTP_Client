@@ -1,8 +1,6 @@
 #ifndef MYFTP_H
 #define MYFTP_H
 
-#endif // MYFTP_H
-
 #include <QtCore>
 #include "qurlinfo.h"
 
@@ -63,7 +61,7 @@ private slots:
     //OK
     void piFinished(bool error);
     //OK
-    void piConnectState(myFTP::State cState);
+    void piConnectState(myFTP::State);
 
 signals:
     void stateChanged(myFTP::State);
@@ -87,3 +85,5 @@ public:
     myFTP::Command command;
     QStringList rawCmds;
 };
+
+#endif // MYFTP_H

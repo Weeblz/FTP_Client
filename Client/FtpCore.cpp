@@ -11,8 +11,7 @@ ftpPI::ftpPI(QObject* parent)
     connect(&commandSocket, SIGNAL(hostFound()), this, SLOT(hostFound()));
     connect(&commandSocket, SIGNAL(connected()), this, SLOT(connected()));
     connect(&commandSocket, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    connect(&commandSocket, SIGNAL(connectionClosed()), this, SLOT(connectionClosed()));
-    //connect(&commandSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)));
+    connect(&commandSocket, SIGNAL(disconnected()), this, SLOT(connectionClosed()));
 
     connect(&dtp, SIGNAL(connectState(ftpDTP::ConnectState)),
             this, SLOT(dtpConnectState(ftpDTP::ConnectState)));
@@ -31,8 +30,7 @@ void ftpPI::connected()
 
 void ftpPI::readyRead()
 {
-    if(waitForDtpToConnect) return;
-
+    if(waitForDtpToConnect) {qDebug()<<"asd\n";return;}
     while(commandSocket.canReadLine())
     {
         QString line = commandSocket.readLine();
@@ -67,7 +65,6 @@ void ftpPI::readyRead()
         replyText += line.mid(4); // strip multiline end "xxx "
         if (replyText.endsWith(QLatin1String("\r\n")))
             replyText.chop(2);
-
         if (processReply())
             replyText.clear();
     }
@@ -113,7 +110,6 @@ void ftpPI::dtpConnectState(ftpDTP::ConnectState state)
 
 void ftpPI::connectToHost(const QString& address, quint16 port)
 {
-
     emit connectState(myFTP::State::HostLookup);
     commandSocket.connectToHost(address, port);
 }
@@ -136,7 +132,7 @@ bool ftpPI::sendCommands(const QStringList& cmds)
     }
 
     if(commandSocket.state() != QTcpSocket::ConnectedState){
-        qDebug() << "Can not add send the commands.";
+        qDebug() << "Can not send commands. Please, try again.";
         return true;
     }
 
@@ -278,13 +274,11 @@ void ftpDTP::socketReadyRead()
 
 }
 
-void ftpDTP::socketConnectionClosed()
-{
+void ftpDTP::socketConnectionClosed() {
     emit connectState(ConnectState::CsClosed);
 }
 
-void ftpDTP::connectToHost(const QString& address, quint16 port)
-{
+void ftpDTP::connectToHost(const QString& address, quint16 port) {
     if(socket != nullptr) {
         delete socket;
         socket = nullptr;
@@ -293,14 +287,13 @@ void ftpDTP::connectToHost(const QString& address, quint16 port)
 
     connect(socket, SIGNAL(connected()), this, SLOT(socketConnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(socketReadyRead()));
-    connect(socket, SIGNAL(connectionClosed()), this, SLOT(socketconnectionClosed()));
+    connect(socket, SIGNAL(disconnected()), this, SLOT(socketConnectionClosed()));
 
     socket->connectToHost(address, port);
 }
 
 
-void ftpDTP::abortConnection()
-{
+void ftpDTP::abortConnection() {
     if(socket != nullptr) {
         socket->abort();
     }
@@ -309,6 +302,7 @@ void ftpDTP::abortConnection()
 
 static void parseUnixDir(const QStringList& tokens, QUrlInfo& dir_info)
 {
+
     // ** Taken from Qt 4.8
     // Unix style, 7 + 1 entries
     // -rw-r--r--    1 ftp      ftp      17358091 Aug 10  2004 qt-x11-free-3.3.3.tar.gz
@@ -391,6 +385,7 @@ static void parseUnixDir(const QStringList& tokens, QUrlInfo& dir_info)
 
 static void parseDosDir(const QStringList& tokens, QUrlInfo& dir_info)
 {
+
     // ** Taken from Qt 4.8
     // DOS style, 3 + 1 entries
     // 01-16-02  11:14AM       <DIR>          epsgroup
@@ -435,6 +430,7 @@ static void parseDosDir(const QStringList& tokens, QUrlInfo& dir_info)
 
 bool ftpDTP::parseDir(const QByteArray& buffer, QUrlInfo& dir_info)
 {
+
     if(buffer.isEmpty()){
         return false;
     }

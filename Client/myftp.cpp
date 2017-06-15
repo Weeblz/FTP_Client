@@ -4,8 +4,8 @@
 myFTP::myFTP(QObject *parent)
     : QObject{ parent }, pi{ new ftpPI(this) }
 {
-    connect(pi, SIGNAL(connectState(State)),
-            SLOT(piConnectState(State)));
+    connect(pi, SIGNAL(connectState(myFTP::State)),
+            SLOT(piConnectState(myFTP::State)));
     connect(pi, SIGNAL(finished(bool)),
                 this, SLOT(piFinished(bool)));
 
@@ -13,8 +13,7 @@ myFTP::myFTP(QObject *parent)
             this, SIGNAL(listInfo(QUrlInfo)));
 }
 
-myFTP::~myFTP()
-{
+myFTP::~myFTP() {
     abort();
     close();
 
@@ -27,7 +26,7 @@ myFTP::~myFTP()
 
 void myFTP::addCommand(ftpCommand* cmd) {
     pendingCmds.append(cmd);
-    if(pendingCmds.size() == 1) {
+    if(pendingCmds.count() == 1) {
         startNextCommand();
     }
 }
@@ -37,7 +36,7 @@ void myFTP::connectToHost(const QString& host, quint16 port) {
     cmds << host;
     cmds << QString::number((uint)port);
 
-    addCommand(new ftpCommand(ConnectToHost, cmds));
+    addCommand(new ftpCommand(Command::ConnectToHost, cmds));
 }
 
 void myFTP::login(const QString& user, const QString& password) {
