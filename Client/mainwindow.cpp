@@ -12,7 +12,7 @@
 mainwindow::mainwindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::mainwindow),
-    db(QSqlDatabase::addDatabase("QSQLITE"))
+    db(QSqlDatabase::addDatabase("QODBC3"))
 {
     ui->setupUi(this);
 
@@ -30,6 +30,8 @@ mainwindow::mainwindow(QWidget *parent) :
             this, SLOT(cdToParent()));
     connect(ui->fileList, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
             this, SLOT(itemActivated(QTreeWidgetItem*, int)));
+
+    db.setDatabaseName("Driver={SQL Server};Server=localhost\\SQLEXPRESS;Database=FTPDB;");
 
     setWindowIcon(QPixmap("/icons/cloud.svg"));
 }
@@ -70,15 +72,6 @@ void mainwindow::connectToFtp() {
 
     ftp_client->connectToHost(ui->serverAdress->text());
     ftp_client->login();
-
-    if(db.isOpen()) {
-        db.close();
-    }
-    db.setDatabaseName(ui->serverAdress->text());
-
-    if(!db.open()) {
-        qDebug() << db.lastError().text();
-    }
 }
 
 void mainwindow::disconnectFromFtp() {
@@ -105,14 +98,14 @@ void mainwindow::ftpCommandFinished(bool error) {
 
         connected = true;
 
-        //QSqlQuery authentication;
-        //authentication.prepare("EXEC dbo.AuthenticateHost @HostName = ?;");
-        //authentication.addBindValue(ui->ftpServerAddress->text());
-        //if(!authentication.exec()) {
-        //    qDebug() << db.lastError().text();
-        //} else if(authentication.next()) {
-        //    host_id = authentication.value(0).toInt();
-        //}
+        QSqlQuery authentication(db);
+        authentication.prepare("EXEC dbo.AuthenticateHost @HostName = ?;");
+        authentication.addBindValue(ui->serverAdress->text());
+        if(!authentication.exec()) {
+            qDebug() << db.lastError().text();
+        } else if(authentication.next()) {
+            host_id = authentication.value(0).toInt();
+        }
     }
     else if(command == myFTP::Command::Login) {
         directory_id = 1;
@@ -125,26 +118,26 @@ void mainwindow::ftpCommandFinished(bool error) {
             insert = "INSERT INTO @CurrentDirectory(ItemName)"
                      "   VALUES ('" + item_names.join("'), ('") + "'); ";
         }   // insert security check required
-        //QSqlQuery sync_directory;
-        //sync_directory.prepare
-        //        (
-        //            "DECLARE @CurrentDirectory DirectoryShortcut; "
-        //            + insert +
-        //            "EXEC SyncDirectories @HostID = ?, @DirectoryID = ?, @Directory = @CurrentDirectory;"
-        //            );
-        //sync_directory.addBindValue(host_id);
-        //sync_directory.addBindValue(directory_id);
-        //if(!sync_directory.exec()) {
-        //    qDebug() << sync_directory.lastError().text();
-        //}
-        //while(sync_directory.next()) {
-        //   QString item_name = sync_directory.value("ItemName").toString();
-        //    items[item_name].SetId(sync_directory.value("ItemID").toInt());
-        //    ui->fileList
-        //            ->findItems(item_name, Qt::MatchExactly, 0).first()
-        //            ->setText(2, sync_directory.value("ItemComment").toString());
-        //
-        // }
+        QSqlQuery sync_directory(db);
+        sync_directory.prepare
+                (
+                    "DECLARE @CurrentDirectory DirectoryShortcut; "
+                    + insert +
+                    "EXEC SyncDirectories @HostID = ?, @DirectoryID = ?, @Directory = @CurrentDirectory;"
+                    );
+        sync_directory.addBindValue(host_id);
+        sync_directory.addBindValue(directory_id);
+        if(!sync_directory.exec()) {
+            qDebug() << sync_directory.lastError().text();
+        }
+        while(sync_directory.next()) {
+           QString item_name = sync_directory.value("ItemName").toString();
+            items[item_name].SetId(sync_directory.value("ItemID").toInt());
+            ui->fileList
+                    ->findItems(item_name, Qt::MatchExactly, 0).first()
+                    ->setText(2, sync_directory.value("ItemComment").toString());
+
+         }
         if(items.isEmpty()) {
             ui->fileList->addTopLevelItem(new QTreeWidgetItem(QStringList() << tr("<empty>")));
             ui->fileList->setEnabled(false);
@@ -178,12 +171,12 @@ void mainwindow::itemActivated(QTreeWidgetItem* tree_item, int column) {
                                                          "Put your comment here:",
                                                          tree_item->text(column));
         tree_item->setText(column, comment);
-//        QSqlQuery update_comment;
-//        update_comment.prepare("EXEC UpdateItemComment @HostID = ?, @ItemID = ?, @ItemComment = ?;");
-//        update_comment.addBindValue(host_id);
-//        update_comment.addBindValue(items.value(item_name).GetId());
-//        update_comment.addBindValue(comment);
-//        update_comment.exec();
+        QSqlQuery update_comment(db);
+        update_comment.prepare("EXEC UpdateItemComment @HostID = ?, @ItemID = ?, @ItemComment = ?;");
+        update_comment.addBindValue(host_id);
+        update_comment.addBindValue(items.value(item_name).GetId());
+        update_comment.addBindValue(comment);
+        update_comment.exec();
     }
     else {
         if(items.value(item_name).isDir()) {
